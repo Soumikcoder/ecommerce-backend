@@ -21,9 +21,8 @@ public class UserServices {
     @Autowired
     ProductRepo productRepo;
     public void purchase(Integer userId) throws Exception{
-        if (userRepo.existsById(userId)) {
-            throw new Exception("User Doesn't Exsists!");
-        }
+        if (!userRepo.existsById(userId)) throw new Exception("User Doesn't Exsists!");
+
         User user=userRepo.findById(userId).get();
         List<CartItem> cartItems=cartRepo.findByUser(user);
         if (cartItems.size() == 0) {
@@ -39,6 +38,20 @@ public class UserServices {
             //calculate total amount and check balance availaiblity 
             //update new product count after transaction
             // update new wallet balance
+        }
+        if(totalAmount > user.getWallet()) throw new Exception("Your balance is low!");
+        synchronized(this){
+            for (CartItem cartItem : cartItems) {
+                Product product=cartItem.getProduct();
+                Long noofItemsavailaible=product.getCount();
+                Long noofItemsrequired=cartItem.getCount();
+                product.setCount(noofItemsavailaible - noofItemsrequired);
+                productRepo.save(product);
+               cartRepo.delete(cartItem);
+            }
+            Long currentBalance=user.getWallet();
+            user.setWallet(currentBalance-totalAmount);
+            userRepo.save(user);
         }
     }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,7 @@ import com.example.ecommerce.services.UserServices;
 
 @RestController
 @RequestMapping("/cart")
+@CrossOrigin(origins = "http://localhost:5173/")
 public class CartController {
     @Autowired
     CartServices cartServices;
@@ -54,9 +56,9 @@ public class CartController {
     public ResponseEntity<String> purchase(@PathVariable Integer userId){
         try {
             userServices.purchase(userId);
-            return new ResponseEntity<>("Payment Successfull!",HttpStatus.PROCESSING);
+            return new ResponseEntity<>("Payment Successfull!",HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage() ,HttpStatus.BAD_REQUEST);
         }
     }
 
